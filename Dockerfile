@@ -1,24 +1,16 @@
-# step 1 : specify a base image 
-FROM node:18-alpine
-
-# step 2 : set working directory inside the container 
+# Dockerfile
+FROM node:14
 WORKDIR /app
-
-# step 3 : copy the package.json and package-lock.json files to install dependencies
 COPY package*.json ./
-
-# step 4 : install dependencies
-RUN npm build
-
-# step 5 : copy the rest of your code
+RUN npm install
 COPY . .
-
-# step 6 : Build the React application 
 RUN npm run build
 
-# step 7 : set up a command to run the app using a lightweight HTTP server
-RUN npm install -g serve
-CMD [ "serve","-s","build" ]
+FROM nginx:alpine
+COPY --from=0 /app/build /usr/share/nginx/html
 
-#Optional : Expose the port your application runs on 
-EXPOSE 3000
+# Add version as a label
+LABEL version="0.1.0"
+
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
